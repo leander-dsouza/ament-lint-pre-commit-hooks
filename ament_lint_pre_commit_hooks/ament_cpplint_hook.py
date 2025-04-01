@@ -6,34 +6,41 @@ import sys
 import docker
 
 DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
-DOCKER_IMAGE_NAME = "ament_lint_cmake_linter"
+DOCKER_IMAGE_NAME = "ament_cpplint_linter"
 DOCKERFILE_NAME = "Dockerfile"
 
-def is_cmake_file(path):
-    """Check if path is a CMake file we should lint."""
+def is_cpp_file(path):
+    """Check if path is a C/C++ file we should lint."""
     filename = os.path.basename(path)
-    return (filename == 'CMakeLists.txt' or
-            filename.endswith('.cmake') or
-            filename.endswith('.cmake.in'))
+    extensions = ['c', 'cc', 'cpp', 'cxx', 'h', 'hh', 'hpp', 'hxx']
+    return any(filename.endswith('.' + ext) for ext in extensions)
 
-def filter_cmake_files(paths):
-    """Filter and return only CMake files from the input paths."""
-    cmake_files = []
+def filter_cpp_files(paths, exclude_patterns=None):
+    """Filter and return only C/C++ files from the input paths."""
+    filtered_files = []
+    exclude_patterns = exclude_patterns or []
+
     for path in paths:
-        if os.path.isfile(path) and is_cmake_file(path):
-            cmake_files.append(path)
+        if os.path.isfile(path) and is_cpp_file(path):
+            if not any(exclude in path for exclude in exclude_patterns):
+                filtered_files.append(path)
         elif os.path.isdir(path):
             for root, _, files in os.walk(path):
                 for file in files:
-                    if is_cmake_file(file):
-                        cmake_files.append(os.path.join(root, file))
-    return cmake_files if cmake_files else ['.']
+                    file_path = os.path.join(root, file)
+                    if is_cpp_file(file_path):
+                        if not any(exclude in file_path for exclude in exclude_patterns):
+                            filtered_files.append(file_path)
+    return filtered_files
 
-def run_ament_lint_cmake(args):
-    """Run ament_lint_cmake in Docker and properly handle output."""
-    cmake_files = filter_cmake_files(args.paths)
+def run_cpplint(args):
+    """Run cpplint in Docker and properly handle output."""
+    cpp_files = filter_cpp_files(args.paths, args.exclude)
+    if not cpp_files:
+        print("No C/C++ files found to lint", file=sys.stderr)
+        return 0
+
     cwd = os.getcwd()
-
     client = docker.from_env()
 
     try:
@@ -45,11 +52,15 @@ def run_ament_lint_cmake(args):
         )
 
         # Prepare command and volumes
-        cmd = ["ament_lint_cmake"]
+        cmd = ["ament_cpplint"]
         if args.filters:
-            cmd.extend(["--filters", args.filters])
+            cmd.extend(["--filter", args.filters])
+        if args.root:
+            cmd.extend(["--root", args.root])
+        if args.output:
+            cmd.extend(["--output", args.output])
         cmd.extend(["--linelength", str(args.linelength)])
-        cmd.extend(cmake_files)
+        cmd.extend(cpp_files)
 
         volumes = {cwd: {'bind': '/workspace', 'mode': 'ro'}}
 
@@ -95,7 +106,8 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(
-        description='Check CMake code against style conventions.',
+        description='Check code against the Google style conventions using '
+                    'cpplint.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         'paths',
@@ -103,18 +115,24 @@ def main(argv=None):
         default=[os.curdir],
         help='Files/directories to check')
     parser.add_argument(
-        '--filters',
-        default='',
-        help='Filters for lint_cmake')
+        '--filters', metavar='FILTER,FILTER,...', type=str,
+        help='A comma separated list of category filters to apply')
     parser.add_argument(
-        '--linelength',
-        metavar='N',
-        type=int,
-        default=140,
-        help='Maximum line length')
+        '--linelength', metavar='N', type=int, default=100,
+        help='The maximum line length')
+    parser.add_argument(
+        '--root', type=str,
+        help='The --root option for cpplint')
+    parser.add_argument(
+        '--exclude', default=[],
+        nargs='*',
+        help='Exclude C/C++ files from being checked.')
+    parser.add_argument(
+        '--output', type=str,
+        help='The --output option for cpplint')
 
     args = parser.parse_args(argv)
-    return run_ament_lint_cmake(args)
+    return run_cpplint(args)
 
 if __name__ == '__main__':
     sys.exit(main())
