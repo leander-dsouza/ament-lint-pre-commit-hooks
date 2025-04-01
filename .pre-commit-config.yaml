@@ -18,12 +18,12 @@ repos:
     -   id: codespell
 
 -   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
-    rev: v0.0.4
+    rev: v0.0.5
     hooks:
-    -   id: ament_lint_cmake_hook
-    -   id: ament_cpplint_hook
-    -   id: ament_uncrustify_hook
-    -   id: ament_xmllint_hook
-    -   id: ament_flake8_hook
-    -   id: ament_pep257_hook
-    -   id: ament_mypy_hook
+    -   id: ament_lint_cmake
+    -   id: ament_cpplint
+    -   id: ament_uncrustify
+    -   id: ament_xmllint
+    -   id: ament_flake8
+    -   id: ament_pep257
+    -   id: ament_mypy
