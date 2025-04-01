@@ -1,0 +1,30 @@
+repos:
+
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+-   repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        types: [python]
+
+-   repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+    -   id: codespell
+
+-   repo: local
+    hooks:
+    -   id: ament_lint_cmake_hook
+        name: ament_lint_cmake_hook
+        description: Check CMake code style using cmakelint.
+        language: system
+        entry: ament_lint_cmake_hook
+        types: [cmake]
+        args: ["--filters=+whitespace/indent", "--linelength=120"]
