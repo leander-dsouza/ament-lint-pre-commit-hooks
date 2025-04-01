@@ -18,3 +18,10 @@
     language: system
     entry: ament_uncrustify_hook
     types: [c++]
+
+-   id: ament_xmllint_hook
+    name: ament_xmllint_hook
+    description: Check XML markup using xmllint.
+    language: system
+    entry: ament_xmllint_hook
+    types: [xml]
