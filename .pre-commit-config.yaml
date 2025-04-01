@@ -34,6 +34,13 @@ repos:
         entry: ament_cpplint_hook
         types: [c++]
 
+    -   id: ament_uncrustify_hook
+        name: ament_uncrustify_hook
+        description: Code style checking using uncrustify.
+        language: system
+        entry: ament_uncrustify_hook
+        types: [c++]
+        args: ["--reformat"]
 
 # -   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
 #     rev: v0.0.0
@@ -43,3 +50,6 @@ repos:
 
 #     -   id: ament_cpplint_hook
 #         args: ["--linelength=120"]
+
+#     -   id: ament_uncrustify_hook
+#         args: ["--reformat"]

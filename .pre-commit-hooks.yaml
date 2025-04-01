@@ -11,3 +11,10 @@
     language: system
     entry: ament_cpplint_hook
     types: [c++]
+
+-   id: ament_uncrustify_hook
+    name: ament_uncrustify_hook
+    description: Code style checking using uncrustify.
+    language: system
+    entry: ament_uncrustify_hook
+    types: [c++]
