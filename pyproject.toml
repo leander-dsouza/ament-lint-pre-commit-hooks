@@ -1,0 +1,6 @@
+[tool.mypy]
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["pydocstyle.*", "docker", "setuptools"]
+ignore_missing_imports = true

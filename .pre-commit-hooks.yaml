@@ -39,3 +39,10 @@
     language: system
     entry: ament_pep257_hook
     types: [python]
+
+-   id: ament_mypy_hook
+    name: ament_mypy_hook
+    description: Check Python code style using mypy.
+    language: system
+    entry: ament_mypy_hook
+    types: [python]
