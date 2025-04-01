@@ -6,16 +6,18 @@ import sys
 import docker
 
 DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
-DOCKER_IMAGE_NAME = "ament_xmllint_linter"
-DOCKERFILE_NAME = "Dockerfile"
+DOCKER_IMAGE_NAME = 'ament_xmllint_linter'
+DOCKERFILE_NAME = 'Dockerfile'
 
 # Define default file extensions
 default_extensions = ['xml']
+
 
 def is_xml_file(path, extensions):
     """Check if path is an XML file we should lint."""
     filename = os.path.basename(path)
     return any(filename.endswith(f'.{ext}') for ext in extensions)
+
 
 def filter_xml_files(paths, extensions, exclude_patterns=None):
     """Filter and return only XML files from the input paths."""
@@ -34,11 +36,12 @@ def filter_xml_files(paths, extensions, exclude_patterns=None):
                             filtered_files.append(os.path.join(root, file))
     return filtered_files
 
+
 def run_xmllint(args):
     """Run xmllint in Docker and properly handle output."""
     xml_files = filter_xml_files(args.paths, args.extensions, args.exclude)
     if not xml_files:
-        print("No XML files found to lint", file=sys.stderr)
+        print('No XML files found to lint', file=sys.stderr)
         return 0
 
     cwd = os.getcwd()
@@ -53,7 +56,7 @@ def run_xmllint(args):
         )
 
         # Prepare command and volumes
-        cmd = ["ament_xmllint"]
+        cmd = ['ament_xmllint']
         cmd.extend(xml_files)
 
         volumes = {
@@ -83,19 +86,20 @@ def run_xmllint(args):
         container.remove()
 
         if exit_code != 0 and not output:
-            print("Error: XML validation failed but no output was captured", file=sys.stderr)
+            print('Error: XML validation failed but no output was captured', file=sys.stderr)
 
         return exit_code
 
     except docker.errors.BuildError as e:
-        print(f"Error building Docker image: {e}", file=sys.stderr)
+        print(f'Error building Docker image: {e}', file=sys.stderr)
         return 1
     except docker.errors.APIError as e:
-        print(f"Docker API error: {e}", file=sys.stderr)
+        print(f'Docker API error: {e}', file=sys.stderr)
         return 1
     except Exception as e:
-        print(f"Unexpected error: {e}", file=sys.stderr)
+        print(f'Unexpected error: {e}', file=sys.stderr)
         return 1
+
 
 def main(argv=None):
     if argv is None:
@@ -109,7 +113,7 @@ def main(argv=None):
         nargs='*',
         default=[os.curdir],
         help=f'The files or directories to check. For directories, only files ending '
-             f'in {", ".join([f"'.{e}'" for e in default_extensions])} will be considered '
+             f'in {', '.join([f'".{e}"' for e in default_extensions])} will be considered '
              f'(unless overruled by the --extensions option)')
     parser.add_argument(
         '--exclude',
@@ -124,6 +128,7 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
     return run_xmllint(args)
+
 
 if __name__ == '__main__':
     sys.exit(main())

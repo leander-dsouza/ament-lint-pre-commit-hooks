@@ -6,8 +6,9 @@ import sys
 import docker
 
 DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
-DOCKER_IMAGE_NAME = "ament_lint_cmake_linter"
-DOCKERFILE_NAME = "Dockerfile"
+DOCKER_IMAGE_NAME = 'ament_lint_cmake_linter'
+DOCKERFILE_NAME = 'Dockerfile'
+
 
 def is_cmake_file(path):
     """Check if path is a CMake file we should lint."""
@@ -15,6 +16,7 @@ def is_cmake_file(path):
     return (filename == 'CMakeLists.txt' or
             filename.endswith('.cmake') or
             filename.endswith('.cmake.in'))
+
 
 def filter_cmake_files(paths):
     """Filter and return only CMake files from the input paths."""
@@ -28,6 +30,7 @@ def filter_cmake_files(paths):
                     if is_cmake_file(file):
                         cmake_files.append(os.path.join(root, file))
     return cmake_files if cmake_files else ['.']
+
 
 def run_ament_lint_cmake(args):
     """Run ament_lint_cmake in Docker and properly handle output."""
@@ -45,10 +48,10 @@ def run_ament_lint_cmake(args):
         )
 
         # Prepare command and volumes
-        cmd = ["ament_lint_cmake"]
+        cmd = ['ament_lint_cmake']
         if args.filters:
-            cmd.extend(["--filters", args.filters])
-        cmd.extend(["--linelength", str(args.linelength)])
+            cmd.extend(['--filters', args.filters])
+        cmd.extend(['--linelength', str(args.linelength)])
         cmd.extend(cmake_files)
 
         volumes = {cwd: {'bind': '/workspace', 'mode': 'ro'}}
@@ -76,19 +79,20 @@ def run_ament_lint_cmake(args):
         container.remove()  # Clean up
 
         if exit_code != 0 and not output:
-            print("Error: Linting failed but no output was captured", file=sys.stderr)
+            print('Error: Linting failed but no output was captured', file=sys.stderr)
 
         return exit_code
 
     except docker.errors.BuildError as e:
-        print(f"Error building Docker image: {e}", file=sys.stderr)
+        print(f'Error building Docker image: {e}', file=sys.stderr)
         return 1
     except docker.errors.APIError as e:
-        print(f"Docker API error: {e}", file=sys.stderr)
+        print(f'Docker API error: {e}', file=sys.stderr)
         return 1
     except Exception as e:
-        print(f"Unexpected error: {e}", file=sys.stderr)
+        print(f'Unexpected error: {e}', file=sys.stderr)
         return 1
+
 
 def main(argv=None):
     if argv is None:
@@ -115,6 +119,7 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
     return run_ament_lint_cmake(args)
+
 
 if __name__ == '__main__':
     sys.exit(main())
