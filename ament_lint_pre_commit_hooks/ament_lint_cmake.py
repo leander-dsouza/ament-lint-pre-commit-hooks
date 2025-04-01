@@ -52,9 +52,19 @@ def run_ament_lint_cmake(args):
         if args.filters:
             cmd.extend(['--filters', args.filters])
         cmd.extend(['--linelength', str(args.linelength)])
-        cmd.extend(cmake_files)
 
-        volumes = {cwd: {'bind': '/workspace', 'mode': 'ro'}}
+        # Set up xunit file handling
+        volumes = {cwd: {'bind': '/workspace', 'mode': 'rw'}}
+
+        if args.xunit_file:
+            # Create absolute path and ensure directory exists
+            abs_xunit_path = os.path.abspath(args.xunit_file)
+            os.makedirs(os.path.dirname(abs_xunit_path) or '.', exist_ok=True)
+            # Use relative path inside container to avoid workspace prefix
+            rel_path = os.path.relpath(abs_xunit_path, cwd)
+            cmd.extend(['--xunit-file', rel_path])  # Use relative path here
+
+        cmd.extend(cmake_files)
 
         # Run container with output capture
         container = client.containers.run(
@@ -62,24 +72,21 @@ def run_ament_lint_cmake(args):
             command=cmd,
             volumes=volumes,
             working_dir='/workspace',
-            remove=False,  # Don't remove so we can get logs
+            remove=False,
             detach=True
         )
 
-        # Stream and capture output
-        output = []
+        # Stream output to console
         for line in container.logs(stream=True, follow=True):
-            line = line.decode('utf-8').strip()
-            print(line)
-            output.append(line)
+            print(line.decode('utf-8').strip())
 
         # Get the exit code
         container.reload()
         exit_code = container.attrs['State']['ExitCode']
-        container.remove()  # Clean up
+        container.remove()
 
-        if exit_code != 0 and not output:
-            print('Error: Linting failed but no output was captured', file=sys.stderr)
+        if exit_code != 0:
+            print('Error: Linting failed', file=sys.stderr)
 
         return exit_code
 
@@ -99,23 +106,34 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(
-        description='Check CMake code against style conventions.',
+        description='Check CMake code against the style conventions.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         'paths',
         nargs='*',
         default=[os.curdir],
-        help='Files/directories to check')
+        help=(
+            'The files or directories to check. '
+            'For directories files named "CMakeLists.txt" and ending in '
+            '".cmake" or ".cmake.in" will be considered.'
+        ))
     parser.add_argument(
         '--filters',
         default='',
-        help='Filters for lint_cmake')
+        help=(
+            'Filters for lint_cmake, for a list of filters see: '
+            'https://github.com/richq/cmake-lint/blob/master/README.md#usage'
+        )
+    )
     parser.add_argument(
         '--linelength',
         metavar='N',
         type=int,
         default=140,
-        help='Maximum line length')
+        help='The maximum line length')
+    parser.add_argument(
+        '--xunit-file',
+        help='Generate a xunit compliant XML file')
 
     args = parser.parse_args(argv)
     return run_ament_lint_cmake(args)
