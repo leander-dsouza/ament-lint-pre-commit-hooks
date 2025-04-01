@@ -17,13 +17,68 @@ repos:
     hooks:
     -   id: codespell
 
--   repo: https://github.com/leander-dsouza/ament-lint-pre-commit-hooks.git
-    rev: v0.0.3
+-   repo: local
     hooks:
     -   id: ament_lint_cmake_hook
+        name: ament_lint_cmake_hook
+        description: Check CMake code style using cmakelint.
+        language: system
+        entry: ament_lint_cmake_hook
+        types: [cmake]
+        args: ["--filters=+whitespace/indent", "--linelength=120"]
+
     -   id: ament_cpplint_hook
+        name: ament_cpplint_hook
+        description: Code style checking using cpplint.
+        language: system
+        entry: ament_cpplint_hook
+        types: [c++]
+
     -   id: ament_uncrustify_hook
+        name: ament_uncrustify_hook
+        description: Code style checking using uncrustify.
+        language: system
+        entry: ament_uncrustify_hook
+        types: [c++]
+        args: ["--reformat"]
+
     -   id: ament_xmllint_hook
-    -   id: ament_flake8_hook
+        name: ament_xmllint_hook
+        description: Check XML markup using xmllint.
+        language: system
+        entry: ament_xmllint_hook
+        types: [xml]
+
+    # -   id: ament_flake8_hook
+    #     name: ament_flake8_hook
+    #     description: Check Python code style using flake8.
+    #     language: system
+    #     entry: ament_flake8_hook
+    #     types: [python]
+
     -   id: ament_pep257_hook
-    -   id: ament_mypy_hook
+        name: ament_pep257_hook
+        description: Check Python code style using pep257.
+        language: system
+        entry: ament_pep257_hook
+        types: [python]
+
+    # -   id: ament_mypy_hook
+    #     name: ament_mypy_hook
+    #     description: Check Python code style using mypy.
+    #     language: system
+    #     entry: ament_mypy_hook
+    #     types: [python]
+    #     args: ["--config", "pyproject.toml"]
+
+# -   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
+#     rev: v0.0.0
+#     hooks:
+#     -   id: ament_lint_cmake_hook
+#         args: ["--filters=+whitespace/indent", "--linelength=120"]
+
+#     -   id: ament_cpplint_hook
+#         args: ["--linelength=120"]
+
+#     -   id: ament_uncrustify_hook
+#         args: ["--reformat"]
