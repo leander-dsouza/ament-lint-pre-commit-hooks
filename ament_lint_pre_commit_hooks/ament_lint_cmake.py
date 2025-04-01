@@ -114,8 +114,8 @@ def main(argv=None):
         default=[os.curdir],
         help=(
             'The files or directories to check. '
-            'For directories files named \'CMakeLists.txt\' and ending in '
-            '\'.cmake\' or \'.cmake.in\' will be considered.'
+            'For directories files named "CMakeLists.txt" and ending in '
+            '".cmake" or ".cmake.in" will be considered.'
         ))
     parser.add_argument(
         '--filters',
