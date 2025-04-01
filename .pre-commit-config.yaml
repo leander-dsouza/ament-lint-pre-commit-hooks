@@ -42,6 +42,14 @@ repos:
         types: [c++]
         args: ["--reformat"]
 
+    -   id: ament_xmllint_hook
+        name: ament_xmllint_hook
+        description: Check XML markup using xmllint.
+        language: system
+        entry: ament_xmllint_hook
+        types: [xml]
+
+
 # -   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
 #     rev: v0.0.0
 #     hooks:
