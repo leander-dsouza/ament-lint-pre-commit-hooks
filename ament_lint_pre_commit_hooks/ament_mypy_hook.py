@@ -2,7 +2,7 @@
 import argparse
 import os
 import sys
-from typing import List
+from typing import List, Optional
 
 import docker
 
@@ -20,7 +20,8 @@ def is_python_file(path: str) -> bool:
     return any(filename.endswith(f'.{ext}') for ext in PYTHON_EXTENSIONS)
 
 
-def filter_python_files(paths: List[str], exclude_patterns: List[str] = None) -> List[str]:
+def filter_python_files(paths: List[str],
+                        exclude_patterns: Optional[List[str]] = None) -> List[str]:
     """Filter and return only Python files from the input paths."""
     filtered_files = []
     exclude_patterns = exclude_patterns or []
@@ -63,7 +64,8 @@ def run_mypy(args: argparse.Namespace) -> int:
             cwd: {'bind': '/workspace', 'mode': 'ro'},
         }
         if args.config_file and os.path.exists(args.config_file):
-            config_path_in_container = os.path.join('/workspace', os.path.relpath(args.config_file, cwd))
+            config_path_in_container = \
+                os.path.join('/workspace', os.path.relpath(args.config_file, cwd))
             cmd.extend(['--config', config_path_in_container])
 
         # Add cache directory
@@ -110,6 +112,7 @@ def run_mypy(args: argparse.Namespace) -> int:
     except Exception as e:
         print(f'Unexpected error: {e}', file=sys.stderr)
         return 1
+
 
 def main(argv: List[str] = sys.argv[1:]) -> int:
     """Command line tool for static type analysis with mypy."""
