@@ -1,6 +1,4 @@
 repos:
-
-repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -28,3 +26,20 @@ repos:
         entry: ament_lint_cmake_hook
         types: [cmake]
         args: ["--filters=+whitespace/indent", "--linelength=120"]
+
+    -   id: ament_cpplint_hook
+        name: ament_cpplint_hook
+        description: Code style checking using cpplint.
+        language: system
+        entry: ament_cpplint_hook
+        types: [c++]
+
+
+# -   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
+#     rev: v0.0.0
+#     hooks:
+#     -   id: ament_lint_cmake_hook
+#         args: ["--filters=+whitespace/indent", "--linelength=120"]
+
+#     -   id: ament_cpplint_hook
+#         args: ["--linelength=120"]

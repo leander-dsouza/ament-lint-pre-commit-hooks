@@ -4,4 +4,10 @@
     language: system
     entry: ament_lint_cmake_hook
     types: [cmake]
-    stages: [pre-commit, pre-push, manual]
+
+-   id: ament_cpplint_hook
+    name: ament_cpplint_hook
+    description: Code style checking using cpplint.
+    language: system
+    entry: ament_cpplint_hook
+    types: [c++]
