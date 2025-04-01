@@ -56,6 +56,13 @@ repos:
     #     entry: ament_flake8_hook
     #     types: [python]
 
+    # -   id: ament_pep257_hook
+    #     name: ament_pep257_hook
+    #     description: Check Python code style using pep257.
+    #     language: system
+    #     entry: ament_pep257_hook
+    #     types: [python]
+
 # -   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
 #     rev: v0.0.0
 #     hooks:
