@@ -21,6 +21,11 @@ repos:
     rev: v0.0.5
     hooks:
     -   id: ament_lint_cmake
+        args:
+            - "--filters=+whitespace/indent"
+            - "--linelength=140"
+            # - "--xunit-file=ament_lint_cmake.xml"
+
     -   id: ament_cpplint
     -   id: ament_uncrustify
     -   id: ament_xmllint
