@@ -17,8 +17,8 @@ repos:
     hooks:
     -   id: codespell
 
--   repo: https://github.com/leander-dsouza/ament-lint-pre-commit-hooks.git
-    rev: v0.0.3
+-   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
+    rev: v0.0.4
     hooks:
     -   id: ament_lint_cmake_hook
     -   id: ament_cpplint_hook
