@@ -6,14 +6,16 @@ import sys
 import docker
 
 DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
-DOCKER_IMAGE_NAME = "ament_cpplint_linter"
-DOCKERFILE_NAME = "Dockerfile"
+DOCKER_IMAGE_NAME = 'ament_cpplint_linter'
+DOCKERFILE_NAME = 'Dockerfile'
+
 
 def is_cpp_file(path):
     """Check if path is a C/C++ file we should lint."""
     filename = os.path.basename(path)
     extensions = ['c', 'cc', 'cpp', 'cxx', 'h', 'hh', 'hpp', 'hxx']
     return any(filename.endswith('.' + ext) for ext in extensions)
+
 
 def filter_cpp_files(paths, exclude_patterns=None):
     """Filter and return only C/C++ files from the input paths."""
@@ -33,11 +35,12 @@ def filter_cpp_files(paths, exclude_patterns=None):
                             filtered_files.append(file_path)
     return filtered_files
 
+
 def run_cpplint(args):
     """Run cpplint in Docker and properly handle output."""
     cpp_files = filter_cpp_files(args.paths, args.exclude)
     if not cpp_files:
-        print("No C/C++ files found to lint", file=sys.stderr)
+        print('No C/C++ files found to lint', file=sys.stderr)
         return 0
 
     cwd = os.getcwd()
@@ -52,14 +55,14 @@ def run_cpplint(args):
         )
 
         # Prepare command and volumes
-        cmd = ["ament_cpplint"]
+        cmd = ['ament_cpplint']
         if args.filters:
-            cmd.extend(["--filter", args.filters])
+            cmd.extend(['--filter', args.filters])
         if args.root:
-            cmd.extend(["--root", args.root])
+            cmd.extend(['--root', args.root])
         if args.output:
-            cmd.extend(["--output", args.output])
-        cmd.extend(["--linelength", str(args.linelength)])
+            cmd.extend(['--output', args.output])
+        cmd.extend(['--linelength', str(args.linelength)])
         cmd.extend(cpp_files)
 
         volumes = {cwd: {'bind': '/workspace', 'mode': 'ro'}}
@@ -87,19 +90,20 @@ def run_cpplint(args):
         container.remove()  # Clean up
 
         if exit_code != 0 and not output:
-            print("Error: Linting failed but no output was captured", file=sys.stderr)
+            print('Error: Linting failed but no output was captured', file=sys.stderr)
 
         return exit_code
 
     except docker.errors.BuildError as e:
-        print(f"Error building Docker image: {e}", file=sys.stderr)
+        print(f'Error building Docker image: {e}', file=sys.stderr)
         return 1
     except docker.errors.APIError as e:
-        print(f"Docker API error: {e}", file=sys.stderr)
+        print(f'Docker API error: {e}', file=sys.stderr)
         return 1
     except Exception as e:
-        print(f"Unexpected error: {e}", file=sys.stderr)
+        print(f'Unexpected error: {e}', file=sys.stderr)
         return 1
+
 
 def main(argv=None):
     if argv is None:
@@ -133,6 +137,7 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
     return run_cpplint(args)
+
 
 if __name__ == '__main__':
     sys.exit(main())

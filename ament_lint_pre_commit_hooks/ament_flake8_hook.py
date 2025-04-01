@@ -6,44 +6,42 @@ import sys
 import docker
 
 DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
-DOCKER_IMAGE_NAME = 'ament_uncrustify_linter'
+DOCKER_IMAGE_NAME = 'ament_flake8_linter'
 DOCKERFILE_NAME = 'Dockerfile'
 
 # Define file extensions
-c_extensions = ['c', 'cc', 'h', 'hh']
-cpp_extensions = ['cpp', 'cxx', 'hpp', 'hxx']
-all_extensions = c_extensions + cpp_extensions
+PYTHON_EXTENSIONS = ['py']
 
 
-def is_cpp_file(path):
-    """Check if path is a C/C++ file we should lint."""
+def is_python_file(path):
+    """Check if path is a Python file we should lint."""
     filename = os.path.basename(path)
-    return any(filename.endswith(f'.{ext}') for ext in all_extensions)
+    return any(filename.endswith(f'.{ext}') for ext in PYTHON_EXTENSIONS)
 
 
-def filter_cpp_files(paths, exclude_patterns=None):
-    """Filter and return only C/C++ files from the input paths."""
+def filter_python_files(paths, exclude_patterns=None):
+    """Filter and return only Python files from the input paths."""
     filtered_files = []
     exclude_patterns = exclude_patterns or []
 
     for path in paths:
-        if os.path.isfile(path) and is_cpp_file(path):
+        if os.path.isfile(path) and is_python_file(path):
             if not any(exclude in os.path.basename(path) for exclude in exclude_patterns):
                 filtered_files.append(path)
         elif os.path.isdir(path):
             for root, _, files in os.walk(path):
                 for file in files:
-                    if is_cpp_file(file):
+                    if is_python_file(file):
                         if not any(exclude in file for exclude in exclude_patterns):
                             filtered_files.append(os.path.join(root, file))
     return filtered_files
 
 
-def run_uncrustify(args):
-    """Run uncrustify in Docker and properly handle output."""
-    cpp_files = filter_cpp_files(args.paths, args.exclude)
-    if not cpp_files:
-        print('No C/C++ files found to lint', file=sys.stderr)
+def run_flake8(args):
+    """Run flake8 in Docker and properly handle output."""
+    python_files = filter_python_files(args.paths, args.excludes)
+    if not python_files:
+        print('No Python files found to lint', file=sys.stderr)
         return 0
 
     cwd = os.getcwd()
@@ -58,24 +56,16 @@ def run_uncrustify(args):
         )
 
         # Prepare command and volumes
-        cmd = ['ament_uncrustify']
-
-        # Add language if specified
-        if args.language:
-            cmd.extend(['-l', args.language])
-
-        # Add reformat option
-        if args.reformat:
-            cmd.append('--reformat')
+        cmd = ['ament_flake8']
 
         # Add linelength if specified
         if args.linelength:
             cmd.extend(['--linelength', str(args.linelength)])
 
-        cmd.extend(cpp_files)
+        cmd.extend(python_files)
 
         volumes = {
-            cwd: {'bind': '/workspace', 'mode': 'rw'},  # Need write access for reformatting
+            cwd: {'bind': '/workspace', 'mode': 'ro'},
         }
 
         # Run container with output capture
@@ -101,7 +91,7 @@ def run_uncrustify(args):
         container.remove()
 
         if exit_code != 0 and not output:
-            print('Error: Formatting failed but no output was captured', file=sys.stderr)
+            print('Error: Flake8 linting failed but no output was captured', file=sys.stderr)
 
         return exit_code
 
@@ -121,38 +111,26 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(
-        description='Check code style using uncrustify.',
+        description='Check code using flake8.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        '--linelength',
-        metavar='N',
-        type=int,
+        '--linelength', metavar='N', type=int,
         help='The maximum line length (default: specified in the config file)')
     parser.add_argument(
         'paths',
         nargs='*',
         default=[os.curdir],
         help='The files or directories to check. For directories files ending '
-             f'in {', '.join([f'".{e}"' for e in sorted(c_extensions + cpp_extensions)])} \
-                will be considered.')
+             'in ".py" will be considered.')
     parser.add_argument(
         '--exclude',
         metavar='filename',
         nargs='*',
-        default=[],
-        help='Exclude specific file names from the check.')
-    parser.add_argument(
-        '--language',
-        choices=['C', 'C++', 'CPP'],
-        help='Passed to uncrustify as "-l <language>" to force a specific '
-             'language rather then choosing one based on file extension')
-    parser.add_argument(
-        '--reformat',
-        action='store_true',
-        help='Reformat the files in place')
+        dest='excludes',
+        help='The filenames to exclude.')
 
     args = parser.parse_args(argv)
-    return run_uncrustify(args)
+    return run_flake8(args)
 
 
 if __name__ == '__main__':
