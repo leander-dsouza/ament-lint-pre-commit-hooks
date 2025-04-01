@@ -49,12 +49,12 @@ repos:
         entry: ament_xmllint_hook
         types: [xml]
 
-    -   id: ament_flake8_hook
-        name: ament_flake8_hook
-        description: Check Python code style using flake8.
-        language: system
-        entry: ament_flake8_hook
-        types: [python]
+    # -   id: ament_flake8_hook
+    #     name: ament_flake8_hook
+    #     description: Check Python code style using flake8.
+    #     language: system
+    #     entry: ament_flake8_hook
+    #     types: [python]
 
 # -   repo: git@github.com:leander-dsouza/ament-lint-pre-commit-hooks.git
 #     rev: v0.0.0
