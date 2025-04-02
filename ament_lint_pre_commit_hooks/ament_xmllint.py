@@ -55,11 +55,21 @@ def run_xmllint(args):
 
         # Prepare command and volumes
         cmd = ['ament_xmllint']
-        cmd.extend(xml_files)
 
-        volumes = {
-            cwd: {'bind': workspace_dir, 'mode': 'ro'},
-        }
+        # Handle xunit file output
+        if args.xunit_file:
+            # Create absolute path and ensure directory exists
+            abs_xunit_path = os.path.abspath(args.xunit_file)
+            os.makedirs(os.path.dirname(abs_xunit_path) or '.', exist_ok=True)
+            # Use relative path inside container
+            rel_xunit_path = os.path.relpath(abs_xunit_path, cwd)
+            cmd.extend(['--xunit-file', rel_xunit_path])
+            # Need write access for xunit file
+            volumes = {cwd: {'bind': workspace_dir, 'mode': 'rw'}}
+        else:
+            volumes = {cwd: {'bind': workspace_dir, 'mode': 'ro'}}
+
+        cmd.extend(xml_files)
 
         # Run container with output capture
         container = client.containers.run(
@@ -123,6 +133,9 @@ def main(argv=None):
         nargs='*',
         default=default_extensions,
         help='The file extensions of the files to check')
+    parser.add_argument(
+        '--xunit-file',
+        help='Generate a xunit compliant XML file (default: None)')
 
     args = parser.parse_args(argv)
     return run_xmllint(args)
