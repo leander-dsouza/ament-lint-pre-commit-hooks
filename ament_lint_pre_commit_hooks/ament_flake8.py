@@ -9,6 +9,8 @@ DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCKER_IMAGE_NAME = 'ament_flake8_linter'
 DOCKERFILE_NAME = 'Dockerfile'
 
+FLAKE8_CONFIG = os.path.join(DOCKERFILE_DIR, 'config', 'ament_flake8.ini')
+
 # Define file extensions
 PYTHON_EXTENSIONS = ['py']
 
@@ -56,15 +58,45 @@ def run_flake8(args):
         # Prepare command and volumes
         cmd = ['ament_flake8']
 
+        # Handle config file
+        if args.config_file:
+            # Get absolute path of config file
+            abs_config_path = os.path.abspath(args.config_file)
+            # Get relative path from working directory
+            rel_config_path = os.path.relpath(abs_config_path, cwd)
+            # Add to command with container path
+            cmd.extend(['--config', f'/workspace/{rel_config_path}'])
+            # Add config file to volumes
+            config_volumes = {
+                abs_config_path: {'bind': f'/workspace/{rel_config_path}', 'mode': 'ro'}
+            }
+        else:
+            config_volumes = {}
+
         # Add linelength if specified
         if args.linelength:
             cmd.extend(['--linelength', str(args.linelength)])
 
-        cmd.extend(python_files)
+        # Handle xunit file output
+        if args.xunit_file:
+            # Create absolute path and ensure directory exists
+            abs_xunit_path = os.path.abspath(args.xunit_file)
+            os.makedirs(os.path.dirname(abs_xunit_path) or '.', exist_ok=True)
+            # Use relative path inside container
+            rel_xunit_path = os.path.relpath(abs_xunit_path, cwd)
+            cmd.extend(['--xunit-file', rel_xunit_path])
+            # Need write access for xunit file
+            volumes = {
+                cwd: {'bind': workspace_dir, 'mode': 'rw'},
+                **config_volumes
+            }
+        else:
+            volumes = {
+                cwd: {'bind': workspace_dir, 'mode': 'ro'},
+                **config_volumes
+            }
 
-        volumes = {
-            cwd: {'bind': workspace_dir, 'mode': 'ro'},
-        }
+        cmd.extend(python_files)
 
         # Run container with output capture
         container = client.containers.run(
@@ -104,13 +136,17 @@ def run_flake8(args):
         return 1
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
-
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description='Check code using flake8.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--config',
+        metavar='path',
+        dest='config_file',
+        default=FLAKE8_CONFIG,
+        help='The config file'
+    )
     parser.add_argument(
         '--linelength', metavar='N', type=int,
         help='The maximum line length (default: specified in the config file)')
@@ -126,6 +162,9 @@ def main(argv=None):
         nargs='*',
         dest='excludes',
         help='The filenames to exclude.')
+    parser.add_argument(
+        '--xunit-file',
+        help='Generate a xunit compliant XML file')
 
     args = parser.parse_args(argv)
     return run_flake8(args)
