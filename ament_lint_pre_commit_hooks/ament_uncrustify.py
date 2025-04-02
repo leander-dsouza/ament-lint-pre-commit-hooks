@@ -9,6 +9,8 @@ DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCKER_IMAGE_NAME = 'ament_uncrustify_linter'
 DOCKERFILE_NAME = 'Dockerfile'
 
+UNCRUSTIFY_CONFIG = os.path.join(DOCKERFILE_DIR, 'config', 'uncrustify.cfg')
+
 # Define file extensions
 c_extensions = ['c', 'cc', 'h', 'hh']
 cpp_extensions = ['cpp', 'cxx', 'hpp', 'hxx']
@@ -58,6 +60,21 @@ def run_uncrustify(args):
         # Prepare command and volumes
         cmd = ['ament_uncrustify']
 
+        # Add config file
+        if args.config_file:
+            # Get absolute path of config file
+            abs_config_path = os.path.abspath(args.config_file)
+            # Get relative path from working directory
+            rel_config_path = os.path.relpath(abs_config_path, cwd)
+            # Add to command with container path
+            cmd.extend(['-c', f'{workspace_dir}/{rel_config_path}'])
+            # Add config file to volumes
+            config_volumes = {
+                abs_config_path: {'bind': f'{workspace_dir}/{rel_config_path}', 'mode': 'ro'}
+            }
+        else:
+            config_volumes = {}
+
         # Add language if specified
         if args.language:
             cmd.extend(['-l', args.language])
@@ -70,10 +87,20 @@ def run_uncrustify(args):
         if args.linelength:
             cmd.extend(['--linelength', str(args.linelength)])
 
+        # Handle xunit file output
+        if args.xunit_file:
+            # Create absolute path and ensure directory exists
+            abs_xunit_path = os.path.abspath(args.xunit_file)
+            os.makedirs(os.path.dirname(abs_xunit_path) or '.', exist_ok=True)
+            # Use relative path inside container
+            rel_xunit_path = os.path.relpath(abs_xunit_path, cwd)
+            cmd.extend(['--xunit-file', rel_xunit_path])
+
         cmd.extend(cpp_files)
 
         volumes = {
-            cwd: {'bind': workspace_dir, 'mode': 'rw'},  # Need write access for reformatting
+            cwd: {'bind': workspace_dir, 'mode': 'rw'},
+            **config_volumes
         }
 
         # Run container with output capture
@@ -114,13 +141,16 @@ def run_uncrustify(args):
         return 1
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
-
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description='Check code style using uncrustify.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '-c', '--config',
+        metavar='CFG',
+        default=UNCRUSTIFY_CONFIG,
+        dest='config_file',
+        help='The path to the uncrustify config file')
     parser.add_argument(
         '--linelength',
         metavar='N',
@@ -131,8 +161,8 @@ def main(argv=None):
         nargs='*',
         default=[os.curdir],
         help='The files or directories to check. For directories files ending '
-             f'in {', '.join([f'".{e}"' for e in sorted(c_extensions + cpp_extensions)])} \
-                will be considered.')
+             f'in {", ".join([f".{e}" for e in sorted(c_extensions + cpp_extensions)])} '
+             'will be considered.')
     parser.add_argument(
         '--exclude',
         metavar='filename',
@@ -148,6 +178,9 @@ def main(argv=None):
         '--reformat',
         action='store_true',
         help='Reformat the files in place')
+    parser.add_argument(
+        '--xunit-file',
+        help='Generate a xunit compliant XML file')
 
     args = parser.parse_args(argv)
     return run_uncrustify(args)
