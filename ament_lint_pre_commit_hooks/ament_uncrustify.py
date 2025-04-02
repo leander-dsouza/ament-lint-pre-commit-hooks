@@ -41,10 +41,8 @@ def filter_cpp_files(paths, exclude_patterns=None):
 
 def run_uncrustify(args):
     """Run uncrustify in Docker and properly handle output."""
+    workspace_dir = '/workspace'
     cpp_files = filter_cpp_files(args.paths, args.exclude)
-    if not cpp_files:
-        print('No C/C++ files found to lint', file=sys.stderr)
-        return 0
 
     cwd = os.getcwd()
     client = docker.from_env()
@@ -75,7 +73,7 @@ def run_uncrustify(args):
         cmd.extend(cpp_files)
 
         volumes = {
-            cwd: {'bind': '/workspace', 'mode': 'rw'},  # Need write access for reformatting
+            cwd: {'bind': workspace_dir, 'mode': 'rw'},  # Need write access for reformatting
         }
 
         # Run container with output capture
@@ -83,25 +81,25 @@ def run_uncrustify(args):
             image=DOCKER_IMAGE_NAME,
             command=cmd,
             volumes=volumes,
-            working_dir='/workspace',
+            working_dir=workspace_dir,
             remove=False,
             detach=True
         )
 
         # Stream and capture output
-        output = []
         for line in container.logs(stream=True, follow=True):
             line = line.decode('utf-8').strip()
+
+            if workspace_dir in line:
+                # Remove the workspace_dir prefix from the path
+                line = line.replace(workspace_dir + '/', '')
+
             print(line)
-            output.append(line)
 
         # Get the exit code
         container.reload()
         exit_code = container.attrs['State']['ExitCode']
         container.remove()
-
-        if exit_code != 0 and not output:
-            print('Error: Formatting failed but no output was captured', file=sys.stderr)
 
         return exit_code
 

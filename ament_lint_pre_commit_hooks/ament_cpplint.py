@@ -38,10 +38,8 @@ def filter_cpp_files(paths, exclude_patterns=None):
 
 def run_cpplint(args):
     """Run cpplint in Docker and properly handle output."""
+    workspace_dir = '/workspace'
     cpp_files = filter_cpp_files(args.paths, args.exclude)
-    if not cpp_files:
-        print('No C/C++ files found to lint', file=sys.stderr)
-        return 0
 
     cwd = os.getcwd()
     client = docker.from_env()
@@ -63,34 +61,46 @@ def run_cpplint(args):
         if args.output:
             cmd.extend(['--output', args.output])
         cmd.extend(['--linelength', str(args.linelength)])
-        cmd.extend(cpp_files)
 
-        volumes = {cwd: {'bind': '/workspace', 'mode': 'ro'}}
+        # Handle xunit file output
+        if args.xunit_file:
+            # Create absolute path and ensure directory exists
+            abs_xunit_path = os.path.abspath(args.xunit_file)
+            os.makedirs(os.path.dirname(abs_xunit_path) or '.', exist_ok=True)
+            # Use relative path inside container
+            rel_xunit_path = os.path.relpath(abs_xunit_path, cwd)
+            cmd.extend(['--xunit-file', rel_xunit_path])
+            # Mount as read-write to allow file creation
+            volumes = {cwd: {'bind': workspace_dir, 'mode': 'rw'}}
+        else:
+            volumes = {cwd: {'bind': workspace_dir, 'mode': 'ro'}}
+
+        cmd.extend(cpp_files)
 
         # Run container with output capture
         container = client.containers.run(
             image=DOCKER_IMAGE_NAME,
             command=cmd,
             volumes=volumes,
-            working_dir='/workspace',
-            remove=False,  # Don't remove so we can get logs
+            working_dir=workspace_dir,
+            remove=False,
             detach=True
         )
 
         # Stream and capture output
-        output = []
         for line in container.logs(stream=True, follow=True):
             line = line.decode('utf-8').strip()
+
+            if workspace_dir in line:
+                # Remove the workspace_dir prefix from the path
+                line = line.replace(workspace_dir + '/', '')
+
             print(line)
-            output.append(line)
 
         # Get the exit code
         container.reload()
         exit_code = container.attrs['State']['ExitCode']
-        container.remove()  # Clean up
-
-        if exit_code != 0 and not output:
-            print('Error: Linting failed but no output was captured', file=sys.stderr)
+        container.remove()
 
         return exit_code
 
@@ -105,19 +115,14 @@ def run_cpplint(args):
         return 1
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
+def main(argv=sys.argv[1:]):
+    extensions = ['c', 'cc', 'cpp', 'cxx']
+    headers = ['h', 'hh', 'hpp', 'hxx']
 
     parser = argparse.ArgumentParser(
         description='Check code against the Google style conventions using '
                     'cpplint.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        'paths',
-        nargs='*',
-        default=[os.curdir],
-        help='Files/directories to check')
     parser.add_argument(
         '--filters', metavar='FILTER,FILTER,...', type=str,
         help='A comma separated list of category filters to apply')
@@ -134,7 +139,15 @@ def main(argv=None):
     parser.add_argument(
         '--output', type=str,
         help='The --output option for cpplint')
-
+    parser.add_argument(
+        'paths',
+        nargs='*',
+        default=[os.curdir],
+        help=f'The files or directories to check. For directories files ending '
+             f'in {", ".join([f"'.{e}'" for e in extensions + headers])} will be considered.')
+    parser.add_argument(
+        '--xunit-file',
+        help='Generate a xunit compliant XML file')
     args = parser.parse_args(argv)
     return run_cpplint(args)
 

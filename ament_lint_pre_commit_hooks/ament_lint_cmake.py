@@ -34,9 +34,10 @@ def filter_cmake_files(paths):
 
 def run_ament_lint_cmake(args):
     """Run ament_lint_cmake in Docker and properly handle output."""
+    workspace_dir = '/workspace'
     cmake_files = filter_cmake_files(args.paths)
-    cwd = os.getcwd()
 
+    cwd = os.getcwd()
     client = docker.from_env()
 
     try:
@@ -54,7 +55,7 @@ def run_ament_lint_cmake(args):
         cmd.extend(['--linelength', str(args.linelength)])
 
         # Set up xunit file handling
-        volumes = {cwd: {'bind': '/workspace', 'mode': 'rw'}}
+        volumes = {cwd: {'bind': workspace_dir, 'mode': 'rw'}}
 
         if args.xunit_file:
             # Create absolute path and ensure directory exists
@@ -71,22 +72,25 @@ def run_ament_lint_cmake(args):
             image=DOCKER_IMAGE_NAME,
             command=cmd,
             volumes=volumes,
-            working_dir='/workspace',
+            working_dir=workspace_dir,
             remove=False,
             detach=True
         )
 
-        # Stream output to console
+        # Stream and capture output
         for line in container.logs(stream=True, follow=True):
-            print(line.decode('utf-8').strip())
+            line = line.decode('utf-8').strip()
+
+            if workspace_dir in line:
+                # Remove the workspace_dir prefix from the path
+                line = line.replace(workspace_dir + '/', '')
+
+            print(line)
 
         # Get the exit code
         container.reload()
         exit_code = container.attrs['State']['ExitCode']
         container.remove()
-
-        if exit_code != 0:
-            print('Error: Linting failed', file=sys.stderr)
 
         return exit_code
 
@@ -101,10 +105,7 @@ def run_ament_lint_cmake(args):
         return 1
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
-
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description='Check CMake code against the style conventions.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)

@@ -39,10 +39,8 @@ def filter_python_files(paths, exclude_patterns=None):
 
 def run_flake8(args):
     """Run flake8 in Docker and properly handle output."""
+    workspace_dir = '/workspace'
     python_files = filter_python_files(args.paths, args.excludes)
-    if not python_files:
-        print('No Python files found to lint', file=sys.stderr)
-        return 0
 
     cwd = os.getcwd()
     client = docker.from_env()
@@ -65,7 +63,7 @@ def run_flake8(args):
         cmd.extend(python_files)
 
         volumes = {
-            cwd: {'bind': '/workspace', 'mode': 'ro'},
+            cwd: {'bind': workspace_dir, 'mode': 'ro'},
         }
 
         # Run container with output capture
@@ -73,25 +71,25 @@ def run_flake8(args):
             image=DOCKER_IMAGE_NAME,
             command=cmd,
             volumes=volumes,
-            working_dir='/workspace',
+            working_dir=workspace_dir,
             remove=False,
             detach=True
         )
 
         # Stream and capture output
-        output = []
         for line in container.logs(stream=True, follow=True):
             line = line.decode('utf-8').strip()
+
+            if workspace_dir in line:
+                # Remove the workspace_dir prefix from the path
+                line = line.replace(workspace_dir + '/', '')
+
             print(line)
-            output.append(line)
 
         # Get the exit code
         container.reload()
         exit_code = container.attrs['State']['ExitCode']
         container.remove()
-
-        if exit_code != 0 and not output:
-            print('Error: Flake8 linting failed but no output was captured', file=sys.stderr)
 
         return exit_code
 
