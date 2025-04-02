@@ -10,6 +10,8 @@ DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCKER_IMAGE_NAME = 'ament_mypy_linter'
 DOCKERFILE_NAME = 'Dockerfile'
 
+MYPY_CONFIG = os.path.join(DOCKERFILE_DIR, 'config', 'ament_mypy.ini')
+
 # Define file extensions
 PYTHON_EXTENSIONS = ['py']
 
@@ -20,8 +22,8 @@ def is_python_file(path: str) -> bool:
     return any(filename.endswith(f'.{ext}') for ext in PYTHON_EXTENSIONS)
 
 
-def filter_python_files(paths: List[str],
-                        exclude_patterns: Optional[List[str]] = None) -> List[str]:
+def filter_python_files(
+        paths: List[str], exclude_patterns: Optional[List[str]] = None) -> List[str]:
     """Filter and return only Python files from the input paths."""
     filtered_files = []
     exclude_patterns = exclude_patterns or []
@@ -58,19 +60,26 @@ def run_mypy(args: argparse.Namespace) -> int:
         # Prepare command and volumes
         cmd = ['ament_mypy']
 
-        volumes = {
-            cwd: {'bind': workspace_dir, 'mode': 'ro'},
-        }
-        if args.config_file and os.path.exists(args.config_file):
-            config_path_in_container = \
-                os.path.join(workspace_dir, os.path.relpath(args.config_file, cwd))
-            cmd.extend(['--config', config_path_in_container])
+        # Default to read-only volumes
+        volumes = {cwd: {'bind': workspace_dir, 'mode': 'ro'}}
 
-        # Add cache directory
-        if args.cache_dir and args.cache_dir != os.devnull:
-            # Mount the cache directory if it's not the null device
-            cmd.extend(['--cache-dir', '/cache'])
-            volumes['/cache'] = {'bind': args.cache_dir, 'mode': 'rw'}
+        # Handle config file
+        if args.config_file:
+            abs_config_path = os.path.abspath(args.config_file)
+            rel_config_path = os.path.relpath(abs_config_path, cwd)
+            cmd.extend(['--config', f'/workspace/{rel_config_path}'])
+            volumes[abs_config_path] = {'bind': f'/workspace/{rel_config_path}', 'mode': 'ro'}
+
+        # Handle xunit file output
+        if args.xunit_file:
+            # Create absolute path and ensure directory exists
+            abs_xunit_path = os.path.abspath(args.xunit_file)
+            os.makedirs(os.path.dirname(abs_xunit_path) or '.', exist_ok=True)
+            # Use relative path inside container
+            rel_xunit_path = os.path.relpath(abs_xunit_path, cwd)
+            cmd.extend(['--xunit-file', f'/workspace/{rel_xunit_path}'])
+            # Need write access for workspace to create xunit file
+            volumes[cwd]['mode'] = 'rw'
 
         cmd.extend(python_files)
 
@@ -122,7 +131,7 @@ def main(argv: List[str] = sys.argv[1:]) -> int:
         '--config',
         metavar='path',
         dest='config_file',
-        default=os.path.join(os.path.dirname(__file__), 'configuration', 'ament_mypy.ini'),
+        default=MYPY_CONFIG,
         help='The config file'
     )
     parser.add_argument(
@@ -140,12 +149,8 @@ def main(argv: List[str] = sys.argv[1:]) -> int:
         help='The filenames to exclude.'
     )
     parser.add_argument(
-        '--cache-dir',
-        metavar='cache',
-        default=os.devnull,
-        dest='cache_dir',
-        help='The location mypy will place its cache in. Defaults to system '
-             'null device'
+        '--xunit-file',
+        help='Generate a xunit compliant XML file'
     )
 
     args = parser.parse_args(argv)
