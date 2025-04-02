@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     package_data={
-        'ament_lint_pre_commit_hooks': ['Dockerfile'],
+        'ament_lint_pre_commit_hooks': ['Dockerfile', 'config/*'],
     },
     include_package_data=True,
 )

@@ -9,7 +9,8 @@ DOCKERFILE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOCKER_IMAGE_NAME = 'ament_uncrustify_linter'
 DOCKERFILE_NAME = 'Dockerfile'
 
-UNCRUSTIFY_CONFIG = os.path.join(DOCKERFILE_DIR, 'config', 'uncrustify.cfg')
+UNCRUSTIFY_CONFIG = os.path.join(DOCKERFILE_DIR, 'config',
+                                 'ament_uncrustify.cfg')
 
 # Define file extensions
 c_extensions = ['c', 'cc', 'h', 'hh']

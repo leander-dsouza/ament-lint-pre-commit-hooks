@@ -109,10 +109,7 @@ def run_xmllint(args):
         return 1
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
-
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description='Check XML markup using xmllint.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -135,7 +132,7 @@ def main(argv=None):
         help='The file extensions of the files to check')
     parser.add_argument(
         '--xunit-file',
-        help='Generate a xunit compliant XML file (default: None)')
+        help='Generate a xunit compliant XML file')
 
     args = parser.parse_args(argv)
     return run_xmllint(args)

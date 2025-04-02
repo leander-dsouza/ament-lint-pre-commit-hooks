@@ -122,10 +122,7 @@ def run_pep257(args):
         return 1
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
-
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description='Check docstrings against the style conventions in PEP 257.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
