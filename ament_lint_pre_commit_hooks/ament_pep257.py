@@ -78,11 +78,20 @@ def run_pep257(args):
         if args.add_select:
             cmd.extend(['--add-select'] + args.add_select)
 
-        cmd.extend(python_files)
+        # Handle xunit file output
+        if args.xunit_file:
+            # Create absolute path and ensure directory exists
+            abs_xunit_path = os.path.abspath(args.xunit_file)
+            os.makedirs(os.path.dirname(abs_xunit_path) or '.', exist_ok=True)
+            # Use relative path inside container
+            rel_xunit_path = os.path.relpath(abs_xunit_path, cwd)
+            cmd.extend(['--xunit-file', rel_xunit_path])
+            # Need write access for xunit file
+            volumes = {cwd: {'bind': workspace_dir, 'mode': 'rw'}}
+        else:
+            volumes = {cwd: {'bind': workspace_dir, 'mode': 'ro'}}
 
-        volumes = {
-            cwd: {'bind': workspace_dir, 'mode': 'ro'},
-        }
+        cmd.extend(python_files)
 
         # Run container with output capture
         container = client.containers.run(
@@ -172,6 +181,9 @@ def main(argv=sys.argv[1:]):
         default=[],
         dest='excludes',
         help='The filenames to exclude.')
+    parser.add_argument(
+        '--xunit-file',
+        help='Generate a xunit compliant XML file')
 
     args = parser.parse_args(argv)
     return run_pep257(args)
