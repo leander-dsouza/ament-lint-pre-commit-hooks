@@ -3,6 +3,37 @@
 # ament-lint-pre-commit-hooks
 Pre-commit hooks for [ament_lint](https://github.com/ament/ament_lint/tree/rolling). No ROS installation required.
 
+### Requirements
+
+* Make sure docker is installed in your [system](https://docs.docker.com/engine/install/). You can check if docker is installed and up and running by the following command:
+
+   ```bash
+   docker run hello-world
+   ```
+
+* Add your user to the docker group:
+
+   ```bash
+   sudo usermod -aG docker $USER
+   ```
+   Log out and log back in to apply the group change.
+
+* Check if docker is running:
+
+   ```bash
+   sudo systemctl status docker
+   ```
+    If it is not running, start the docker service:
+    ```bash
+    sudo systemctl start docker
+    ```
+
+* Install pre-commit:
+
+   ```bash
+   sudo apt install -y pre-commit
+   ```
+
 ### Using ament-lint-pre-commit-hooks with pre-commit
 
 Add this to your `.pre-commit-config.yaml`
