@@ -1,3 +1,17 @@
+-   id: ament_cpplint
+    name: ament_cpplint
+    description: Code style checking using cpplint.
+    language: python
+    entry: ament_cpplint
+    types: [c++]
+
+-   id: ament_flake8
+    name: ament_flake8
+    description: Check Python code style using flake8.
+    language: python
+    entry: ament_flake8
+    types: [python]
+
 -   id: ament_lint_cmake
     name: ament_lint_cmake
     description: Check CMake code style using cmakelint.
@@ -5,12 +19,19 @@
     entry: ament_lint_cmake
     types: [cmake]
 
--   id: ament_cpplint
-    name: ament_cpplint
-    description: Code style checking using cpplint.
+-   id: ament_mypy
+    name: ament_mypy
+    description: Check Python code style using mypy.
     language: python
-    entry: ament_cpplint
-    types: [c++]
+    entry: ament_mypy
+    types: [python]
+
+-   id: ament_pep257
+    name: ament_pep257
+    description: Check Python code style using pep257.
+    language: python
+    entry: ament_pep257
+    types: [python]
 
 -   id: ament_uncrustify
     name: ament_uncrustify
@@ -25,24 +46,3 @@
     language: python
     entry: ament_xmllint
     types: [xml]
-
--   id: ament_flake8
-    name: ament_flake8
-    description: Check Python code style using flake8.
-    language: python
-    entry: ament_flake8
-    types: [python]
-
--   id: ament_pep257
-    name: ament_pep257
-    description: Check Python code style using pep257.
-    language: python
-    entry: ament_pep257
-    types: [python]
-
--   id: ament_mypy
-    name: ament_mypy
-    description: Check Python code style using mypy.
-    language: python
-    entry: ament_mypy
-    types: [python]
