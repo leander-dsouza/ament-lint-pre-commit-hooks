@@ -1,3 +1,5 @@
+[![build status](https://github.com/leander-dsouza/ament-lint-pre-commit-hooks/actions/workflows/lint.yml/badge.svg)](https://github.com/leander-dsouza/ament-lint-pre-commit-hooks/actions/workflows/lint.yml)
+
 # ament-lint-pre-commit-hooks
 Pre-commit hooks for [ament_lint](https://github.com/ament/ament_lint/tree/rolling). No ROS installation required.
 
@@ -25,27 +27,27 @@ Add this to your `.pre-commit-config.yaml`
 
    - `--filters FILTER,FILTER,...`
 
-       A comma separated list of category filters to apply (default: None)
+       A comma separated list of category filters to apply (`default: None`)
 
    - `--linelength N`
 
-      The maximum line length (default: 100)
+      The maximum line length (`default: 100`)
 
    - `--root ROOT`
 
-      The --root option for cpplint (default: None)
+      The --root option for cpplint (`default: None`)
 
    - `--exclude [EXCLUDE ...]`
 
-      Exclude C/C++ files from being checked. (default: [])
+      Exclude C/C++ files from being checked. (`default: []`)
 
    - `--output OUTPUT`
 
-      The --output option for cpplint (default: None)
+      The --output option for cpplint (`default: None`)
 
    - `--xunit-file XUNIT_FILE`
 
-      Generate a xunit compliant XML file (default: None)
+      Generate a xunit compliant XML file (`default: None`)
 
 * **`ament_flake8`**
 
@@ -53,19 +55,19 @@ Add this to your `.pre-commit-config.yaml`
 
    - `--config path`
 
-      The config file (default: /../ament-lint-pre-commit-hooks/ament_lint_pre_commit_hooks/config/ament_flake8.ini)
+      The config file (`default: /installed_path/ament-lint-pre-commit-hooks/ament_lint_pre_commit_hooks/config/ament_flake8.ini`)
 
    - `--linelength N`
 
-      The maximum line length (default: specified in the config file)
+      The maximum line length (`default: specified in the config file`) (`default: None`)
 
    - `--exclude [filename ...]`
 
-      The filenames to exclude. (default: None)
+      The filenames to exclude. (`default: None`)
 
    - `--xunit-file XUNIT_FILE`
 
-      Generate a xunit compliant XML file (default: None)
+      Generate a xunit compliant XML file (`default: None`)
 
 *  **`ament_lint_cmake`**
 
@@ -73,15 +75,15 @@ Add this to your `.pre-commit-config.yaml`
 
    - `--filters FILTERS`
 
-      Filters for lint_cmake, for a list of filters see: https://github.com/richq/cmake-lint/blob/master/README.md#usage (default: )
+      Filters for lint_cmake, for a list of filters see [here](https://github.com/richq/cmake-lint/blob/master/README.md#usage). (`default: `)
 
    - `--linelength N`
 
-      The maximum line length (default: 140)
+      The maximum line length (`default: 140`)
 
    - `--xunit-file XUNIT_FILE`
 
-      Generate a xunit compliant XML file (default: None)
+      Generate a xunit compliant XML file (`default: None`)
 
 * **`ament_mypy`**
 
@@ -89,15 +91,15 @@ Add this to your `.pre-commit-config.yaml`
 
     - `--config path`
 
-        The config file (default: /../ament-lint-pre-commit-hooks/ament_lint_pre_commit_hooks/config/ament_mypy.ini)
+        The config file (`default: /relative_path/ament-lint-pre-commit-hooks/ament_lint_pre_commit_hooks/config/ament_mypy.ini`)
 
     - `--exclude [filename ...]`
 
-        The filenames to exclude. (default: None)
+        The filenames to exclude. (`default: None`)
 
     - `--xunit-file XUNIT_FILE`
 
-        Generate a xunit compliant XML file (default: None)
+        Generate a xunit compliant XML file (`default: None`)
 
 * **`ament_pep257`**
 
@@ -105,32 +107,34 @@ Add this to your `.pre-commit-config.yaml`
 
     - `--ignore IGNORE [IGNORE ...]`
 
-        Choose the list of error codes for pydocstyle NOT to check for. (default: [])
+        Choose the list of error codes for pydocstyle NOT to check for. (`default: []`)
 
     - `--select SELECT [SELECT ...]`
 
-        Choose the basic list of error codes for pydocstyle to check for. (default: [])
+        Choose the basic list of error codes for pydocstyle to check for. (`default: []`)
 
     - `--convention {google,pep257,numpy,ament}`
 
-        Choose a preset list of error codes. Valid options are {'google', 'pep257', 'numpy', 'ament'}.The "ament" convention is defined as --ignore ['D100', 'D101', 'D102', 'D103', 'D104', 'D105', 'D106',
-        'D107', 'D203', 'D212', 'D404']. (default: ament)
+        Choose a preset list of error codes. Valid options are {`google`, `pep257`, `numpy`, `ament`}.
+
+        The "ament" convention is defined as --ignore [`D100`, `D101`, `D102`, `D103`, `D104`, `D105`, `D106`,
+        `D107`, `D203`, `D212`, `D404`]. (`default: ament`)
 
     - `--add-ignore ADD_IGNORE [ADD_IGNORE ...]`
 
-        Ignore an extra error code, removing it from the list set by --(select/ignore) (default: [])
+        Ignore an extra error code, removing it from the list set by --(select/ignore) (`default: []`)
 
     - `--add-select ADD_SELECT [ADD_SELECT ...]`
 
-        Check an extra error code, adding it to the list set by --(select/ignore). (default: [])
+        Check an extra error code, adding it to the list set by --(select/ignore). (`default: []`)
 
     - `--exclude [filename ...]`
 
-        The filenames to exclude. (default: [])
+        The filenames to exclude. (`default: []`)
 
     - `--xunit-file XUNIT_FILE`
 
-        Generate a xunit compliant XML file (default: None)
+        Generate a xunit compliant XML file (`default: None`)
 
 * **`ament_uncrustify`**
 
@@ -138,26 +142,26 @@ Add this to your `.pre-commit-config.yaml`
 
     - `--config CFG`
 
-        The path to the uncrustify config file (default: /../ament-lint-pre-commit-hooks/ament_lint_pre_commit_hooks/config/ament_uncrustify.cfg)
+        The path to the uncrustify config file (`default: /relative_path/ament-lint-pre-commit-hooks/ament_lint_pre_commit_hooks/config/ament_uncrustify.cfg`)
 
     - `--linelength N`
 
-        The maximum line length (default: specified in the config file) (default: None)
+        The maximum line length (`default: specified in the config file`) (`default: None`)
 
     - `--exclude [filename ...]`
 
-        Exclude specific file names from the check. (default: [])
+        Exclude specific file names from the check. (`default: []`)
 
     - `--language {C,C++,CPP}`
 
-        Passed to uncrustify as "-l <language>" to force a specific language rather then choosing one based on file extension (default: None)
+        Passed to uncrustify as `-l <language>` to force a specific language rather then choosing one based on file extension (`default: None`)
 
     - `--reformat`
-        Reformat the files in place (default: False)
+        Reformat the files in place (`default: False`)
 
     - `--xunit-file XUNIT_FILE`
 
-        Generate a xunit compliant XML file (default: None)
+        Generate a xunit compliant XML file (`default: None`)
 
 * **`ament_xmllint`**
 
@@ -165,12 +169,12 @@ Add this to your `.pre-commit-config.yaml`
 
     - `--exclude [filename ...]`
 
-        Exclude specific file names and directory names from the check (default: [])
+        Exclude specific file names and directory names from the check (`default: []`)
 
     - `--extensions [EXTENSIONS ...]`
 
-        The file extensions of the files to check (default: ['xml'])
+        The file extensions of the files to check (`default: ['xml']`)
 
     - `--xunit-file XUNIT_FILE`
 
-        Generate a xunit compliant XML file (default: None)
+        Generate a xunit compliant XML file (`default: None`)
