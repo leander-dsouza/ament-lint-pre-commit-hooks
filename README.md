@@ -40,7 +40,7 @@ Add this to your `.pre-commit-config.yaml`
 
 ```yaml
 -   repo: https://github.com/leander-dsouza/ament-lint-pre-commit-hooks.git
-    rev: v1.0.0
+    rev: v1.1.0
     hooks:
     -   id: ament_cpplint
     -   id: ament_flake8
