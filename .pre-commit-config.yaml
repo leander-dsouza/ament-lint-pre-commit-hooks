@@ -1,29 +1,36 @@
+---
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
 
--   repo: https://github.com/pycqa/isort
+  - repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
       - id: isort
         types: [python]
 
--   repo: https://github.com/codespell-project/codespell
+  - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
-    -   id: codespell
+      - id: codespell
 
--   repo: https://github.com/leander-dsouza/ament-lint-pre-commit-hooks.git
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+        args: [--strict, -c=.yamllint.yaml]
+
+  - repo: https://github.com/leander-dsouza/ament-lint-pre-commit-hooks.git
     rev: v1.0.0
     hooks:
-    -   id: ament_cpplint
-    -   id: ament_flake8
-    -   id: ament_lint_cmake
-    -   id: ament_mypy
-    -   id: ament_pep257
-    -   id: ament_uncrustify
-    -   id: ament_xmllint
+      - id: ament_cpplint
+      - id: ament_flake8
+      - id: ament_lint_cmake
+      - id: ament_mypy
+      - id: ament_pep257
+      - id: ament_uncrustify
+      - id: ament_xmllint
