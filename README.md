@@ -39,16 +39,16 @@ Pre-commit hooks for [ament_lint](https://github.com/ament/ament_lint/tree/rolli
 Add this to your `.pre-commit-config.yaml`
 
 ```yaml
--   repo: https://github.com/leander-dsouza/ament-lint-pre-commit-hooks.git
-    rev: v1.1.0
-    hooks:
-    -   id: ament_cpplint
-    -   id: ament_flake8
-    -   id: ament_lint_cmake
-    -   id: ament_mypy
-    -   id: ament_pep257
-    -   id: ament_uncrustify
-    -   id: ament_xmllint
+- repo: https://github.com/leander-dsouza/ament-lint-pre-commit-hooks.git
+  rev: v1.1.0
+  hooks:
+    - id: ament_cpplint
+    - id: ament_flake8
+    - id: ament_lint_cmake
+    - id: ament_mypy
+    - id: ament_pep257
+    - id: ament_uncrustify
+    - id: ament_xmllint
 ```
 ### Hooks available
 
