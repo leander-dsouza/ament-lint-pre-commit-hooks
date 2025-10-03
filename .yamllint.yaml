@@ -1,0 +1,5 @@
+---
+extends: default
+
+rules:
+  truthy: disable  # Prevent false positives on 'on:' in GitHub workflows
